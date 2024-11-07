@@ -1,0 +1,54 @@
+package sg.ica.eac.common.config;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.autoconfigure.quartz.QuartzDataSource;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+import com.zaxxer.hikari.HikariDataSource;
+
+import sg.ica.eac.common.resource.ConstantsConfig;
+import sg.ica.eac.common.util.SecurityUtil;
+
+@Configuration
+public class DatasourceConfig {
+	@Bean
+	@Primary
+	@ConfigurationProperties("spring.datasource")
+	public DataSourceProperties dataSourceProperties() {
+		return new DataSourceProperties();
+	}
+
+	@Bean
+	@Primary
+	@ConfigurationProperties(prefix = "spring.datasource.hikari")
+	@QuartzDataSource
+	public DataSource dataSource() {
+		DataSourceProperties properties = dataSourceProperties();
+		String password = decryptPass(properties.getPassword());
+
+		return properties.initializeDataSourceBuilder().type(HikariDataSource.class).password(password).build();
+	}
+
+	private String decryptPass(String password) {
+
+		String retrievedPassword = password;
+
+		if (StringUtils.startsWith(retrievedPassword, ConstantsConfig.ENCRYPTION_PREFIX)) {
+
+			SecurityUtil aesUtil = new SecurityUtil(ConstantsConfig.AES_DB_KEY_STRENGTH, ConstantsConfig.AES_DB_HASHING_ITERATION);
+
+			String[] decryptedArray =  StringUtils.removeStart(retrievedPassword, ConstantsConfig.ENCRYPTION_PREFIX).split(":");
+
+			return aesUtil.decryptInfo(decryptedArray[0], decryptedArray[1], decryptedArray[2],
+				ConstantsConfig.DATABASE_KEY);
+		}
+
+		return retrievedPassword;
+	}
+}

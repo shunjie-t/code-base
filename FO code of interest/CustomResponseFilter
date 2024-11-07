@@ -1,0 +1,56 @@
+package sg.ica.eac.submission.filter;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.web.util.ContentCachingResponseWrapper;
+
+import sg.ica.eac.common.resource.ConstantsWebservice;
+import sg.ica.eac.common.util.LogUtil;
+
+@Component
+@Order(0)
+public class CustomResponseFilter implements Filter {	
+	
+	private final Logger logger = LogManager.getLogger(this.getClass());
+	
+	@Value("${log.responses.exclude.urls}")
+	private List<String> urlsToExclude;
+	
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		
+		if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {			
+			ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper((HttpServletResponse) response);
+			chain.doFilter(request, responseWrapper);
+			String characterEncoding = responseWrapper.getCharacterEncoding();
+			String content = new String(responseWrapper.getContentAsByteArray(), characterEncoding);
+			String path = ((HttpServletRequest) request).getRequestURI();
+			if (StringUtils.contains(responseWrapper.getContentType(), ConstantsWebservice.JSON_TYPE) && !StringUtils.isEmpty(content)
+					&& LogUtil.logResponse(urlsToExclude, path)) {
+				logger.info("Webservice response: {}", content);
+			}
+			responseWrapper.addHeader("X-Permitted-Cross-Domain-Policies", "none");
+			responseWrapper.addHeader("Expect-CT", "max-age=604800, enforce");
+			responseWrapper.copyBodyToResponse();
+		} else {
+			chain.doFilter(request, response);
+		}
+
+		LogUtil.reset();
+	}
+}

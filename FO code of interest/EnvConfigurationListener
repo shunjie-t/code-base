@@ -1,0 +1,42 @@
+package sg.ica.eac.common.env;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+import sg.ica.eac.common.resource.Constants;
+
+@Component
+public class EnvConfigurationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent>{
+
+	
+	private final Logger logger = LogManager.getLogger(this.getClass());
+	
+	
+	public static final String MOD_DEFAULT_VALUE = "front";
+	public static final String ENV_DEFAULT_VALUE = "local";
+	public static final String SERV_DEFAULT_VALUE = "config";
+	
+	
+	@Override
+	public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
+		if (StringUtils.isBlank(System.getProperty(Constants.MOD_KEY))) {
+			String mod = System.getenv(Constants.MOD_KEY);
+			System.setProperty(Constants.MOD_KEY, mod == null ? MOD_DEFAULT_VALUE : mod);
+		}
+		if (StringUtils.isBlank(System.getProperty(Constants.ENV_KEY))) {
+			String env = System.getenv(Constants.ENV_KEY);
+			System.setProperty(Constants.ENV_KEY, env == null ? ENV_DEFAULT_VALUE : env);
+		}
+		if (StringUtils.isBlank(System.getProperty(Constants.SERV_KEY))) {
+			String node = System.getenv(Constants.SERV_KEY);
+			System.setProperty(Constants.SERV_KEY, node == null ? SERV_DEFAULT_VALUE : node);
+		}
+		
+		this.logger.info("ENV: {}.{}.{}" + System.getProperty(Constants.MOD_KEY), System.getProperty(Constants.ENV_KEY), System.getProperty(Constants.SERV_KEY));
+	}
+
+}

@@ -1,0 +1,36 @@
+package sg.ica.eac.batchupload.config;
+
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+import sg.ica.eac.batchupload.interceptor.BatchUploadInterceptor;
+
+@Configuration
+@EnableAspectJAutoProxy
+@Aspect
+public class BatchUploadAopConfiguration {
+	
+	@Pointcut("execution(public * sg.ica.eac.batchupload.controller.*.*(..))")
+    public void monitoringSubmissionOperations() {
+		// This method is intentionally empty.
+		// It serves as a pointcut for monitoring submission operations in controllers.
+	}
+	
+	@Bean
+	public BatchUploadInterceptor batchUploadInterceptor() {
+	    return new BatchUploadInterceptor();
+	}
+	
+	@Bean
+	public Advisor batchUploadAdvisor() {
+	    AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
+	    pointcut.setExpression("sg.ica.eac.batchupload.config.BatchUploadAopConfiguration.monitoringSubmissionOperations()");
+	    return new DefaultPointcutAdvisor(pointcut, batchUploadInterceptor());
+	}
+}
