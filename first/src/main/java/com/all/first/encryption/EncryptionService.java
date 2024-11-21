@@ -50,17 +50,15 @@ public class EncryptionService {
 	
 	private ObjectMapper mapper = new ObjectMapper();
 	
-	public CommonResponseModel encryptInfo(String plainText, String version) {
-		CommonResponseModel response = new CommonResponseModel(Constants.invalidRequest);
-		
-		if(version.equals("v1") || version.equals("V1")) {				
-			response.setResponseData(encryptInfoV1(plainText));
+	public CommonResponseModel<String> encryptInfo(String plainText, String version) {
+		String lastVer = "v2";
+		if(version.toLowerCase().equals("v1")) {
+			return new CommonResponseModel<>(encryptInfoV1(plainText));
 		}
-		else if(version.equals("v2") || version.equals("V2")) {
-			response.setResponseData(encryptInfoV2(plainText));
+		else if(version.toLowerCase().equals(lastVer)) {
+			return new CommonResponseModel<>(encryptInfoV2(plainText));
 		}
-		
-		return response;
+		return new CommonResponseModel<>(Constants.invalidRequest);
 	}
 	
 	private String encryptInfoV1(String plainText) {

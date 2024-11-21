@@ -44,7 +44,6 @@ public class EncryptionService {
 	private static final String TEXT_ALGO = "AES/GCM/NoPadding";
 	private static final String KEY_ALGO = "RSA/ECB/OAEPWithSHA-512AndMGF1Padding";
 	
-	private static final String AES = "AES";
 	private static final int BIT_128 = 128;
 	private static final int BIT_256 = 256;
 	private static final String SECRET_KEY_ALGO = "PBKDF2WithHmacSHA1";
@@ -52,17 +51,15 @@ public class EncryptionService {
 	
 	private ObjectMapper mapper = new ObjectMapper();
 	
-	public CommonResponseModel encryptInfo(String plainText, String version) {
-		CommonResponseModel response = new CommonResponseModel(Constants.invalidRequest);
-		
-		if(version.equals("v1") || version.equals("V1")) {				
-			response.setResponseData(encryptInfoV1(plainText));
+	public CommonResponseModel<String> encryptInfo(String plainText, String version) {
+		String lastVer = "v2";
+		if(version.toLowerCase().equals("v1")) {
+			return new CommonResponseModel<>(encryptInfoV1(plainText));
 		}
-		else if(version.equals("v2") || version.equals("V2")) {
-			response.setResponseData(encryptInfoV2(plainText));
+		else if(version.toLowerCase().equals(lastVer)) {
+			return new CommonResponseModel<>(encryptInfoV2(plainText));
 		}
-		
-		return response;
+		return new CommonResponseModel<>(Constants.invalidRequest);
 	}
 	
 	public String encryptInfoV1(String plainText) {
@@ -138,7 +135,7 @@ public class EncryptionService {
 			GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(BIT_128, iv);
 			SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(SECRET_KEY_ALGO);
 			KeySpec spec = new PBEKeySpec(Constants.password.toCharArray(), Hex.decodeHex(DatatypeConverter.printHexBinary(salt).toCharArray()), AES_HASHING_ITERATION, BIT_128);
-			SecretKey key = new SecretKeySpec(keyFactory.generateSecret(spec).getEncoded(), AES);
+			SecretKey key = new SecretKeySpec(keyFactory.generateSecret(spec).getEncoded(), "AES");
 			cipher.init(Cipher.ENCRYPT_MODE, key, gcmParameterSpec);
 			byte[] cipherText = cipher.doFinal(plainText.getBytes());
 			

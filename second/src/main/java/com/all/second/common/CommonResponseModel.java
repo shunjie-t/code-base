@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommonResponseModel {
-	private String responseData;
+public class CommonResponseModel<T> {
+	private T responseData;
 }

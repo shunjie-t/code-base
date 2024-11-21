@@ -40,16 +40,14 @@ public class DecryptionService {
 	private static final int AES_HASHING_ITERATION = 1000;
 	
 	public String decryptInfo(DecryptionRequestModel request, String version) {
-		String response = Constants.invalidRequest;
-		
-		if(version.equals("v1") || version.equals("V1")) {
-			response = decryptInfoV1(request);
+		String lastVer = "v2";
+		if(version.toLowerCase().equals("v1")) {
+			return decryptInfoV1(request);
 		}
-		else if(version.equals("v2") || version.equals("V2")) {
-			response = decryptInfoV2(request);
+		else if(version.toLowerCase().equals(lastVer)) {
+			return decryptInfoV2(request);
 		}
-		
-		return response;
+		return Constants.invalidRequest;
 	}
 	
 	private String decryptInfoV1(DecryptionRequestModel request) {

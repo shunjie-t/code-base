@@ -1,4 +1,4 @@
-package com.all.first.interceptor;
+package com.all.first.rest.restTemplate;
 
 import java.io.IOException;
 

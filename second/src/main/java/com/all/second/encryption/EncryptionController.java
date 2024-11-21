@@ -20,11 +20,11 @@ public class EncryptionController {
 	private EncryptionService encryptionService;
 	
 	@PostMapping(path="/encryption/{version}", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-	public CommonResponseModel encryptInfo(@RequestBody CommonRequestModel request, @PathVariable String version) {
+	public CommonResponseModel<String> encryptInfo(@RequestBody CommonRequestModel request, @PathVariable String version) {
 		if(StringUtils.isNotBlank(request.getRequestData())) {
 			return encryptionService.encryptInfo(request.getRequestData(), version);
 		}
 		
-		return new CommonResponseModel(Constants.invalidRequest);
+		return new CommonResponseModel<>(Constants.invalidRequest);
 	}
 }

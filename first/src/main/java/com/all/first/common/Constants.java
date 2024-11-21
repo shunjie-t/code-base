@@ -16,4 +16,9 @@ public class Constants {
 	public static final String SHA_384 = "SHA-384";
 	public static final String SHA_512 = "SHA-512";
 	public static final String MD5 = "MD5";
+	
+	public static final String first = "FIRST";
+	public static final String second_target_url = "http://localhost:8082/second/target";
+	public static final String X_API_KEY = "X_Api_Key";
+	public static final String X_API_KEY_VALUE = "58A09E22B";
 }

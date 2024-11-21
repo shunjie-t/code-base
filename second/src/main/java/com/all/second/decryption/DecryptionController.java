@@ -22,13 +22,13 @@ public class DecryptionController {
 	@Autowired
 	private DecryptionService decryptionService;
 	
-	private static final JSONDeserializer<Object> deserializer = new JSONDeserializer<>();
+	private static final JSONDeserializer<DecryptionRequestModel> deserializer = new JSONDeserializer<>();
 	
 	@PostMapping(value="/decryption/{version}", consumes=MediaType.APPLICATION_JSON_VALUE)
 	public String decryptInfo(@RequestBody CommonRequestModel request, @PathVariable String version) {
 		if(ObjectUtils.allNotNull(request)) {
 			byte[] decodedRequest = Base64.getDecoder().decode(request.getRequestData());
-			DecryptionRequestModel decryptionRequest = (DecryptionRequestModel) deserializer.deserialize(new String(decodedRequest), DecryptionRequestModel.class);
+			DecryptionRequestModel decryptionRequest = deserializer.deserialize(new String(decodedRequest), DecryptionRequestModel.class);
 			
 			return decryptionService.decryptInfo(decryptionRequest, version);
 		}
