@@ -1,4 +1,4 @@
-package general.reflection;
+package main.reflection;
 
 @SampleAnnotation(annoField1="str", annoField2=10, annoField3=true)
 public class SampleClass extends SampleSuperClass {

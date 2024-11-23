@@ -1,4 +1,4 @@
-package general.hexadecimal;
+package main.hexadecimal;
 
 import java.math.BigInteger;
 import java.util.HexFormat;

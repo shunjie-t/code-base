@@ -50,52 +50,53 @@ public class HttpClientService implements InitializingBean {
 		mapper.findAndRegisterModules();
 	}
 	
-	public CommonResponseModel<?> getData() {
-		HttpGet httpGet = new HttpGet(Constants.second_target_url);
-		HttpClientResponseHandler<String> responseHandler = response -> {
-			int status = response.getCode();
-			if (status >= 200 && status < 300) {
-				return EntityUtils.toString(response.getEntity());
-			} else {
-				throw new HttpResponseException(status, "Unexpected response status: " + status);
-			}
-		};
-		try {
-			String responseString = httpClient.execute(httpGet, responseHandler);
-			List<DataView> response = mapper.readValue(responseString, new TypeReference<List<DataView>>() {});
-			return new CommonResponseModel<List<DataView>>(response);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return new CommonResponseModel<String>("IOException");
-		}        
-	}
-	
-	public CommonResponseModel<?> getUserData(String user) {
-		HttpGet httpGet = new HttpGet(Constants.second_target_url + "/" + user);
-		HttpHost httpHost = new HttpHost("http", "localhost", 8082);
-		HttpCoreContext httpCoreContext = new HttpCoreContext();
-		HttpEntity entity = null;
-		
-		try(ClassicHttpResponse httpResponse = httpClient.executeOpen(httpHost, httpGet, httpCoreContext)) {
-			entity = httpResponse.getEntity();
-			try(BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()))) {
-				StringBuffer responseData = new StringBuffer();
-				String line = null;
-				while((line = reader.readLine()) != null) {
-					responseData.append(line);
+	public CommonResponseModel<?> getData(String user) {
+		if(StringUtils.isBlank(user)) {
+			HttpGet httpGet = new HttpGet(Constants.second_target_url);
+			HttpClientResponseHandler<String> responseHandler = response -> {
+				int status = response.getCode();
+				if (status >= 200 && status < 300) {
+					return EntityUtils.toString(response.getEntity());
+				} else {
+					throw new HttpResponseException(status, "Unexpected response status: " + status);
 				}
-				List<DataView> result = mapper.readValue(responseData.toString(), new TypeReference<List<DataView>>() {});
-				return new CommonResponseModel<List<DataView>>(result);
-			} catch (UnsupportedOperationException e) {
-				e.printStackTrace();
-				return new CommonResponseModel<String>("UnsupportedOperationException");
+			};
+			try {
+				String responseString = httpClient.execute(httpGet, responseHandler);
+				List<DataView> response = mapper.readValue(responseString, new TypeReference<List<DataView>>() {});
+				return new CommonResponseModel<List<DataView>>(response);
 			} catch (IOException e) {
 				e.printStackTrace();
 				return new CommonResponseModel<String>("IOException");
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return new CommonResponseModel<String>("IOException");
+		}
+		else {
+			HttpGet httpGet = new HttpGet(Constants.second_target_url + "/" + user);
+			HttpHost httpHost = new HttpHost("http", "localhost", 8082);
+			HttpCoreContext httpCoreContext = new HttpCoreContext();
+			HttpEntity entity = null;
+			
+			try(ClassicHttpResponse httpResponse = httpClient.executeOpen(httpHost, httpGet, httpCoreContext)) {
+				entity = httpResponse.getEntity();
+				try(BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()))) {
+					StringBuffer responseData = new StringBuffer();
+					String line = null;
+					while((line = reader.readLine()) != null) {
+						responseData.append(line);
+					}
+					List<DataView> result = mapper.readValue(responseData.toString(), new TypeReference<List<DataView>>() {});
+					return new CommonResponseModel<List<DataView>>(result);
+				} catch (UnsupportedOperationException e) {
+					e.printStackTrace();
+					return new CommonResponseModel<String>("UnsupportedOperationException");
+				} catch (IOException e) {
+					e.printStackTrace();
+					return new CommonResponseModel<String>("IOException");
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				return new CommonResponseModel<String>("IOException");
+			}
 		}
 	}
 	
@@ -118,7 +119,7 @@ public class HttpClientService implements InitializingBean {
 			else if(StringUtils.isBlank(view.getData())) {
 				return new CommonResponseModel<String>("Data must not be blank");
 			}
-			view.setDataId(null);			
+			view.setDataId(null);
 			view.setCreBy(Constants.first);
 			view.setUpdBy(Constants.first);
 			LocalDateTime date = LocalDateTime.now();

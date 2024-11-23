@@ -21,10 +21,10 @@ public class JwtController {
 	ObjectMapper mapper = new ObjectMapper();
 	
 	@PostMapping("/jwe/encrypt")
-	public String encryptJweRequest(@RequestParam String param) {
+	public String encryptJweRequest(@RequestBody String body) {
 		JwtModel request = null;
 		try {
-			request = mapper.readValue(param, JwtModel.class);
+			request = mapper.readValue(body, JwtModel.class);
 		} catch (JsonMappingException e) {
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
@@ -35,15 +35,15 @@ public class JwtController {
 	}
 	
 	@PostMapping(path="/jwe/decrypt", consumes=MediaType.APPLICATION_JSON_VALUE)
-	public String decryptJweRequest(@RequestBody JwtModel param) {
-		return jwtService.decryptJwe(param);
+	public String decryptJweRequest(@RequestBody JwtModel body) {
+		return jwtService.decryptJwe(body);
 	}
 	
 	@PostMapping("/jws/sign")
-	public String signJwsRequest(@RequestParam String param) {
+	public String signJwsRequest(@RequestBody String body) {
 		JwtModel request = null;
 		try {
-			request = mapper.readValue(param, JwtModel.class);
+			request = mapper.readValue(body, JwtModel.class);
 		} catch (JsonMappingException e) {
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
@@ -54,15 +54,15 @@ public class JwtController {
 	}
 	
 	@PostMapping(path="/jws/verify", consumes=MediaType.APPLICATION_JSON_VALUE)
-	public String verifyJwsRequest(@RequestBody JwtModel param) {
-		return jwtService.verifyJws(param);
+	public String verifyJwsRequest(@RequestBody JwtModel body) {
+		return jwtService.verifyJws(body);
 	}
 
 	@PostMapping("/encrypted-jwt/encrypt")
-	public String encryptJwtRequest(@RequestParam String param) {
+	public String encryptJwtRequest(@RequestBody String body) {
 		JwtModel request = null;
 		try {
-			request = mapper.readValue(param, JwtModel.class);
+			request = mapper.readValue(body, JwtModel.class);
 		} catch (JsonMappingException e) {
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
@@ -73,15 +73,15 @@ public class JwtController {
 	}
 	
 	@PostMapping("/encrypted-jwt/decrypt")
-	public String decryptJwtRequest(@RequestBody JwtModel param) {
-		return jwtService.decryptJwt(param);
+	public String decryptJwtRequest(@RequestBody JwtModel body) {
+		return jwtService.decryptJwt(body);
 	}
 	
 	@PostMapping("/signed-jwt/sign")
-	public String signJwtRequest(@RequestParam String param) {
+	public String signJwtRequest(@RequestBody String body) {
 		JwtModel request = null;
 		try {
-			request = mapper.readValue(param, JwtModel.class);
+			request = mapper.readValue(body, JwtModel.class);
 		} catch (JsonMappingException e) {
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
@@ -92,7 +92,7 @@ public class JwtController {
 	}
 	
 	@PostMapping("/signed-jwt/verify")
-	public String verifyJwtRequest(@RequestBody JwtModel param) {
-		return jwtService.verifyJwt(param);
+	public String verifyJwtRequest(@RequestBody JwtModel body) {
+		return jwtService.verifyJwt(body);
 	}
 }

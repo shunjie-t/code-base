@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.all.first.common.CommonRequestModel;
@@ -23,13 +23,8 @@ public class HttpClientController {
 	private HttpClientService httpClientService;
 	
 	@GetMapping("/http-client")
-	public CommonResponseModel<?> getAllData() {
-		return httpClientService.getData();
-	}
-	
-	@GetMapping("/http-client/{user}")
-	public CommonResponseModel<?> getUserData(@PathVariable String user) {
-		return httpClientService.getUserData(user);
+	public CommonResponseModel<?> getData(@RequestParam String user) {
+		return httpClientService.getData(user);
 	}
 	
 	@PostMapping("/http-client")

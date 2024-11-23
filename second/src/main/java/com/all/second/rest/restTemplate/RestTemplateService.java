@@ -37,51 +37,51 @@ public class RestTemplateService implements InitializingBean {
 		mapper.findAndRegisterModules();
 	}
 	
-	public CommonResponseModel<?> getAllData(String version) {
+	public CommonResponseModel<?> getData(String version, String user) {
 		DataView[] responseArray = null;
-		String lastVer = "v3";
-		if(version.toLowerCase().equals("v1")) {			
-			responseArray = restTemplate.getForObject(Constants.first_target_url, DataView[].class);
-		}
-		else if(version.toLowerCase().equals("v2")) {
-			ResponseEntity<DataView[]> responseEntity = restTemplate.getForEntity(Constants.first_target_url, DataView[].class);
-			responseArray = responseEntity.getBody();
-		}
-		else if(version.toLowerCase().equals(lastVer)) {
-			HttpEntity<DataView[]> httpEntity = restTemplate.exchange(Constants.first_target_url, HttpMethod.GET, null, DataView[].class);
-			responseArray = httpEntity.getBody();
+		String lastVer = null;
+		
+		if(StringUtils.isBlank(user)) {
+			lastVer = "v3";
+			if(version.toLowerCase().equals("v1")) {			
+				responseArray = restTemplate.getForObject(Constants.first_target_url, DataView[].class);
+			}
+			else if(version.toLowerCase().equals("v2")) {
+				ResponseEntity<DataView[]> responseEntity = restTemplate.getForEntity(Constants.first_target_url, DataView[].class);
+				responseArray = responseEntity.getBody();
+			}
+			else if(version.toLowerCase().equals(lastVer)) {
+				HttpEntity<DataView[]> httpEntity = restTemplate.exchange(Constants.first_target_url, HttpMethod.GET, null, DataView[].class);
+				responseArray = httpEntity.getBody();
+			}
+			else {
+				return new CommonResponseModel<String>("Invalid version. Available versions are v1 to " + lastVer);
+			}
 		}
 		else {
-			return new CommonResponseModel<String>("Invalid version. Available versions are v1 to " + lastVer);
+			lastVer = "v3";
+			if(version.toLowerCase().equals("v1")) {
+				responseArray = restTemplate.getForObject(Constants.first_target_url + "/{user}" , DataView[].class, user);			
+			}
+			else if(version.toLowerCase().equals("v2")) {
+				ResponseEntity<DataView[]> responseEntity = restTemplate.getForEntity(Constants.first_target_url + "/{user}", DataView[].class, user);
+				responseArray = responseEntity.getBody();
+			}
+			else if(version.toLowerCase().equals(lastVer)) {
+				HttpEntity<DataView[]> httpEntity = restTemplate.exchange(Constants.first_target_url + "/{user}", HttpMethod.GET, null, DataView[].class, user);
+				responseArray = httpEntity.getBody();
+			}
+			else {
+				return new CommonResponseModel<String>("Invalid version. Available versions are v1 to " + lastVer);
+			}
 		}
+		
 		List<DataView> response = Arrays.asList(responseArray);
 		return new CommonResponseModel<List<DataView>>(response);
 	}
 	
-	public CommonResponseModel<?> getUserData(String version, String user) {
-		DataView[] responseArray = null;
-		String lastVer = "v3";
-		if(version.toLowerCase().equals("v1")) {
-			responseArray = restTemplate.getForObject(Constants.first_target_url + "/{user}" , DataView[].class, user);			
-		}
-		else if(version.toLowerCase().equals("v2")) {
-			ResponseEntity<DataView[]> responseEntity = restTemplate.getForEntity(Constants.first_target_url + "/{user}", DataView[].class, user);
-			responseArray = responseEntity.getBody();
-		}
-		else if(version.toLowerCase().equals(lastVer)) {
-			HttpEntity<DataView[]> httpEntity = restTemplate.exchange(Constants.first_target_url + "/{user}", HttpMethod.GET, null, DataView[].class, user);
-			responseArray = httpEntity.getBody();
-		}
-		else {
-			return new CommonResponseModel<String>("Invalid version. Available versions are v1 to " + lastVer);
-		}
-		List<DataView> response = Arrays.asList(responseArray);
-		return new CommonResponseModel<List<DataView>>(response);
-	}
-	
-	public CommonResponseModel<?> postData(CommonRequestModel request, String version) {
+	public CommonResponseModel<?> postData(CommonRequestModel request, String version, String user) {
 		List<DataView> viewList = null;
-		String lastVer = "v4";
 		try {
 			viewList = mapper.readValue(request.getRequestData(), new TypeReference<List<DataView>>() {});
 		} catch (JsonMappingException e) {
@@ -90,6 +90,10 @@ public class RestTemplateService implements InitializingBean {
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			return new CommonResponseModel<String>("JsonProcessingException");
+		}
+		
+		if(StringUtils.isBlank(user)) {
+			user = Constants.second;
 		}
 		
 		for(DataView view : viewList) {
@@ -100,8 +104,8 @@ public class RestTemplateService implements InitializingBean {
 				return new CommonResponseModel<String>("Data must not be blank");
 			}
 			view.setDataId(null);			
-			view.setCreBy(Constants.second);
-			view.setUpdBy(Constants.second);
+			view.setCreBy(user);
+			view.setUpdBy(user);
 			LocalDateTime date = LocalDateTime.now();
 			view.setCreOn(date);
 			view.setUpdOn(date);
@@ -111,21 +115,21 @@ public class RestTemplateService implements InitializingBean {
 		header.setContentType(MediaType.APPLICATION_JSON);
 		header.add(Constants.X_API_KEY, Constants.X_API_KEY_VALUE);
 		HttpEntity<List<DataView>> entity = new HttpEntity<>(viewList, header);
-		
+		String lastVer = "v4";
 		DataView[] responseArray = null;
 		if(version.toLowerCase().equals("v1")) {
 			responseArray = restTemplate.postForObject(Constants.first_target_url, entity, DataView[].class);
 		}
 		else if(version.toLowerCase().equals("v2")) {
-			ResponseEntity<DataView[]> responseEntity = restTemplate.postForEntity(Constants.first_target_url + "/{user}", entity, DataView[].class, Constants.second);
+			ResponseEntity<DataView[]> responseEntity = restTemplate.postForEntity(Constants.first_target_url + "/{user}", entity, DataView[].class, user);
 			responseArray = responseEntity.getBody();
 		}
 		else if(version.toLowerCase().equals("v3")) {
-			restTemplate.postForLocation(Constants.first_target_url + "/{user}", entity, Constants.second);
-			return new CommonResponseModel<String>(Constants.first_target_url + "/" + Constants.second);
+			restTemplate.postForLocation(Constants.first_target_url + "/{user}", entity, user);
+			return new CommonResponseModel<String>(Constants.first_target_url + "/" + user);
 		}
 		else if(version.toLowerCase().equals(lastVer)) {			
-			ResponseEntity<DataView[]> responseEntity = restTemplate.exchange(Constants.first_target_url + "/{user}", HttpMethod.POST, entity, DataView[].class, Constants.second);
+			ResponseEntity<DataView[]> responseEntity = restTemplate.exchange(Constants.first_target_url + "/{user}", HttpMethod.POST, entity, DataView[].class, user);
 			responseArray = responseEntity.getBody();
 		}
 		else {
@@ -135,9 +139,8 @@ public class RestTemplateService implements InitializingBean {
 		return new CommonResponseModel<List<DataView>>(response);
 	}
 	
-	public CommonResponseModel<?> putData(CommonRequestModel request, String version) {
+	public CommonResponseModel<?> putData(CommonRequestModel request, String version, String user) {
 		List<DataView> viewList = null;
-		String lastVer = "v2";
 		try {
 			viewList = mapper.readValue(request.getRequestData(), new TypeReference<List<DataView>>() {});
 		} catch (JsonMappingException e) {
@@ -146,6 +149,10 @@ public class RestTemplateService implements InitializingBean {
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			return new CommonResponseModel<String>("JsonProcessingException");
+		}
+		
+		if(StringUtils.isBlank(user)) {
+			user = Constants.second;
 		}
 		
 		for(DataView view : viewList) {
@@ -162,10 +169,10 @@ public class RestTemplateService implements InitializingBean {
 				view.setCreOn(null);
 			}
 			else {
-				view.setCreBy(Constants.second);
+				view.setCreBy(user);
 				view.setCreOn(date);
 			}
-			view.setUpdBy(Constants.second);
+			view.setUpdBy(user);
 			view.setUpdOn(date);
 		}
 		
@@ -173,22 +180,21 @@ public class RestTemplateService implements InitializingBean {
 		header.setContentType(MediaType.APPLICATION_JSON);
 		header.add(Constants.X_API_KEY, Constants.X_API_KEY_VALUE);
 		HttpEntity<List<DataView>> entity = new HttpEntity<>(viewList, header);
-		
+		String lastVer = "v2";
 		if(version.toLowerCase().equals("v1")) {
-			restTemplate.put(Constants.first_target_url + "/{user}", entity, Constants.second);
+			restTemplate.put(Constants.first_target_url + "/{user}", entity, user);
 			return new CommonResponseModel<String>("PUT request successful");
 		}
 		else if(version.toLowerCase().equals(lastVer)) {			
-			ResponseEntity<DataView[]> responseEntity = restTemplate.exchange(Constants.first_target_url + "/{user}", HttpMethod.PUT, entity, DataView[].class, Constants.second);
+			ResponseEntity<DataView[]> responseEntity = restTemplate.exchange(Constants.first_target_url + "/{user}", HttpMethod.PUT, entity, DataView[].class, user);
 			List<DataView> response = Arrays.asList(responseEntity.getBody());
 			return new CommonResponseModel<List<DataView>>(response);
 		}
 		return new CommonResponseModel<String>("Invalid version. Available versions are V1 to " + lastVer);
 	}
 	
-	public CommonResponseModel<?> patchData(CommonRequestModel request, String version) {
+	public CommonResponseModel<?> patchData(CommonRequestModel request, String version, String user) {
 		List<DataView> viewList = null;
-		String lastVer = "v2";
 		try {
 			viewList = mapper.readValue(request.getRequestData(), new TypeReference<List<DataView>>() {});
 		} catch (JsonMappingException e) {
@@ -199,13 +205,17 @@ public class RestTemplateService implements InitializingBean {
 			return new CommonResponseModel<String>("JsonProcessingException");
 		}
 		
+		if(StringUtils.isBlank(user)) {
+			user = Constants.second;
+		}
+		
 		for(DataView view : viewList) {
 			if(view.getDataId() == null) {
 				return new CommonResponseModel<String>("Data id must not be blank");
 			}
 			view.setCreBy(null);
 			view.setCreOn(null);
-			view.setUpdBy(Constants.second);
+			view.setUpdBy(user);
 			view.setUpdOn(LocalDateTime.now());
 		}
 		
@@ -213,13 +223,13 @@ public class RestTemplateService implements InitializingBean {
 		header.setContentType(MediaType.APPLICATION_JSON);
 		header.add(Constants.X_API_KEY, Constants.X_API_KEY_VALUE);
 		HttpEntity<List<DataView>> entity = new HttpEntity<>(viewList, header);
-		
+		String lastVer = "v2";
 		DataView[] responseArray = null;
 		if(version.toLowerCase().equals("v1")) {			
 			responseArray = restTemplate.patchForObject(Constants.first_target_url, entity, DataView[].class);
 		}
 		else if(version.toLowerCase().equals(lastVer)) {			
-			ResponseEntity<DataView[]> responseEntity = restTemplate.exchange(Constants.first_target_url + "/{user}", HttpMethod.PATCH, entity, DataView[].class, Constants.second);
+			ResponseEntity<DataView[]> responseEntity = restTemplate.exchange(Constants.first_target_url + "/{user}", HttpMethod.PATCH, entity, DataView[].class, user);
 			responseArray = responseEntity.getBody();
 		}
 		else {
@@ -239,6 +249,10 @@ public class RestTemplateService implements InitializingBean {
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			return new CommonResponseModel<String>("JsonProcessingException");
+		}
+		
+		if(StringUtils.isBlank(user)) {
+			user = Constants.second;
 		}
 		
 		HttpHeaders header = new HttpHeaders();
