@@ -1,0 +1,32 @@
+syntax="proto3";
+
+package com.all.third;
+//option java_package "com.all.third";
+
+service Third {
+	rpc ThirdRespond (Request) returns (Response);
+
+	rpc ThirdStreaming (stream Request) returns (Response);
+	
+	rpc FourthStreaming (Request) returns (stream Response);
+	
+	rpc BidirectionalStreaming (stream Request) return (stream Response);
+}
+
+service Fourth {
+	rpc FourthRespond(Request) returns (Response);
+	
+	rpc FourthStreaming (stream Request) returns (Response);
+	
+	rpc ThirdStreaming (Request) returns (stream Response);
+	
+	rpc BidirectionalStreaming (stream Request) returns (stream Response);
+}
+
+message Request {
+    string message = 1;
+}
+
+message Response {
+    string message = 1;
+}
