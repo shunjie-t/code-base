@@ -1,19 +1,20 @@
-syntax="proto3";
+syntax = "proto3";
 
-package com.all.third;
-//option java_package "com.all.third";
+option java_multiple_files = true;
+option java_package "com.all.third";
+option java_outer_classname = "ThirdProto";
 
-service Third {
+service ThirdService {
 	rpc ThirdRespond (Request) returns (Response);
 
 	rpc ThirdStreaming (stream Request) returns (Response);
 	
 	rpc FourthStreaming (Request) returns (stream Response);
 	
-	rpc BidirectionalStreaming (stream Request) return (stream Response);
+	rpc BidirectionalStreaming (stream Request) returns (stream Response);
 }
 
-service Fourth {
+service FourthService {
 	rpc FourthRespond(Request) returns (Response);
 	
 	rpc FourthStreaming (stream Request) returns (Response);

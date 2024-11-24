@@ -1,9 +1,10 @@
-syntax="proto3";
+syntax = "proto3";
 
-package com.all.fourth;
-//option java_package "com.all.fourth";
+option java_multiple_files = true;
+option java_package "com.all.fourth";
+option java_outer_classname = "FourthProto";
 
-service Fourth {
+service FourthSerivce {
 	rpc FourthRespond(Request) returns (Response);
 	
 	rpc FourthStreaming (stream Request) returns (Response);
@@ -13,14 +14,14 @@ service Fourth {
 	rpc BidirectionalStreaming (stream Request) returns (stream Response);
 }
 
-service Third {
+service ThirdService {
 	rpc ThirdRespond (Request) returns (Response);
 
 	rpc ThirdStreaming (stream Request) returns (Response);
 	
 	rpc FourthStreaming (Request) returns (stream Response);
 	
-	rpc BidirectionalStreaming (stream Request) return (stream Response);
+	rpc BidirectionalStreaming (stream Request) returns (stream Response);
 }
 
 message Request {
