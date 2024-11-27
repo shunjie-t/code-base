@@ -4,30 +4,38 @@ option java_multiple_files = true;
 option java_package = "com.all.fourth";
 option java_outer_classname = "FourthProto";
 
-service FourthSerivce {
-	rpc FourthRespond(Request) returns (Response);
+service DataService {
+	rpc GetDataDetail (CompleteData) returns (DataDetail);
+
+	rpc PostData (stream CompleteData) returns (DataDetail);
 	
-	rpc FourthStreaming (stream Request) returns (Response);
+	rpc GetData (CompleteData) returns (stream CompleteData);
 	
-	rpc ThirdStreaming (Request) returns (stream Response);
-	
-	rpc BidirectionalStreaming (stream Request) returns (stream Response);
+	rpc PostAndGetData (stream CompleteData) returns (stream CompleteData);
 }
 
-service ThirdService {
-	rpc ThirdRespond (Request) returns (Response);
-
-	rpc ThirdStreaming (stream Request) returns (Response);
-	
-	rpc FourthStreaming (Request) returns (stream Response);
-	
-	rpc BidirectionalStreaming (stream Request) returns (stream Response);
+message AuditFields {
+	string creBy = 1;
+	string creOn = 2;
+	string updBy = 3;
+	string updOn = 4;
 }
 
-message Request {
-    string message = 1;
+message Data {
+	string textData = 1;
+	bytes byteData = 2;
 }
 
-message Response {
-    string message = 1;
+message CompleteData {
+	string dataId = 1;
+    string dataType = 2;
+    Data data = 3;
+    bool enabled = 4;
+    AuditFields auditFields = 5;
+}
+
+message DataDetail {
+	string dataId = 1;
+	string dataType = 2;
+    bool enabled = 3;
 }
