@@ -1,0 +1,14 @@
+command
+grpcurl -d '{"message":"Ey344090"}' -plaintext localhost:9093 DataService.DeleteData
+
+grpcurl -d '{"dataType":"txt","data":{"text":"one"}}' -plaintext localhost:9093 DataService.CreateData
+
+grpcurl -d '{"prefix":["m"]}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"prefix":["a"]}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"prefix":["r"]}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"prefix":["g"]}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"prefix":["i"]}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"prefix":["n"]}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"prefix":["."]}' -plaintext localhost:9093 DataService.ReadData
+
+grpcurl -d '{"number":[900000,-800000,50000]}' -plaintext localhost:9093 DataService.UpdateData

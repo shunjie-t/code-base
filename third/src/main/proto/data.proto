@@ -1,0 +1,163 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.all.third";
+option java_outer_classname = "DataProto";
+
+import "google/protobuf/timestamp.proto";
+
+service DataService {
+	// client streaming
+	rpc CreateData (stream CreateRequest) returns (CreateResponse);
+	
+	// server streaming
+	rpc ReadData (ReadRequest) returns (stream ReadResponse);
+	
+	// bidirectional streaming
+	rpc UpdateData (stream UpdateRequest) returns (stream UpdateResponse);
+	
+	// unary
+	rpc DeleteData (DeleteRequest) returns (DeleteResponse);
+}
+
+service TargetService {
+	rpc CreateData (stream CreateRequest) returns (CreateResponse);
+	rpc ReadData (ReadRequest) returns (stream ReadResponse);
+	rpc UpdateData (stream UpdateRequest) returns (stream UpdateResponse);
+	rpc DeleteData (DeleteRequest) returns (DeleteResponse);
+}
+
+message CreateRequest {
+	string dataType = 1;
+	Data data = 2;
+	optional bool enabled = 3;
+	optional string creBy = 4;
+}
+
+message CreateResponse {
+	string dataId = 1;
+	string dataType = 2;
+	bool enabled = 3;
+	string creBy = 4;
+	google.protobuf.Timestamp creOn = 5;
+}
+
+message ReadRequest {
+	optional string dataId = 1;
+	optional string dataType = 2;
+	optional bool enabled = 3;
+	optional string creBy = 4;
+	optional google.protobuf.Timestamp creOn = 5;
+	optional string updBy = 6;
+	optional google.protobuf.Timestamp  updOn = 7;
+}
+
+message ReadResponse {
+	CompleteData record = 1;
+}
+
+message UpdateRequest {
+	Fields searchFields = 1;
+	optional Data data = 2;
+	optional string dataType = 3;
+	optional bool enabled = 4;
+}
+
+message UpdateResponse {
+	CompleteData existedRecord = 1;
+	CompleteData updatedRecord = 2;
+}
+
+message DeleteRequest {
+	Fields deleteFields = 1;
+}
+
+message DeleteResponse {
+	CompleteData deletedRecord = 1;
+}
+
+
+message CompleteData {
+	optional string dataId = 1;
+	optional string dataType = 2;
+    optional Data data = 3;
+	optional bool enabled = 4;
+	optional string creBy = 5;
+	optional google.protobuf.Timestamp creOn = 6;
+	optional string updBy = 7;
+	optional google.protobuf.Timestamp  updOn = 8;
+}
+
+message Data {
+	oneof method {
+		string text = 1;
+		NonTextData nonText = 2;
+	}
+}
+
+message NonTextData {
+	bytes byteData = 1;
+	string dataDesc = 2;
+}
+
+message Fields {
+	oneof method {
+		SearchById id = 1;
+		SearchOtherFields other = 2;
+	}
+}
+
+message SearchById {
+	optional string dataId = 1;
+}
+
+message SearchOtherFields {
+	optional string dataType= 1;
+	optional bool enabled = 2;
+	optional string creBy = 3;
+	optional google.protobuf.Timestamp creOn = 4;
+	optional string updBy = 5;
+	optional google.protobuf.Timestamp  updOn = 6;
+}
+
+service StreamingService {
+    rpc UnaryCall (UnaryRequest) returns (UnaryResponse) {}; 
+
+    rpc ClientStreamingCall (stream ClientRequest) returns (ClientResponse) {};
+
+    rpc ServerStreamingCall (ServerRequest) returns (stream ServerResponse) {};
+
+    rpc BidirectionalStreamingCall (stream BiRequest) returns (stream BiResponse) {};
+}
+
+message UnaryRequest {
+    string message = 1;
+}
+
+message UnaryResponse {
+    string message = 1;
+}
+
+message ClientRequest {
+    int32 number = 1;
+}
+
+message ClientResponse {
+    int32 sum = 1;
+}
+
+message ServerRequest {
+    string prefix = 1;
+}
+
+message ServerResponse {
+    string message = 1;
+}
+
+message BiRequest {
+    string message = 1;
+}
+
+message BiResponse {
+    string message = 1;
+}

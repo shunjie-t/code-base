@@ -2,7 +2,7 @@ package com.all.third.grpc;
 
 import com.all.third.CreateRequest;
 import com.all.third.CreateResponse;
-import com.all.third.DataServiceGrpc;
+import com.all.third.TargetServiceGrpc;
 import com.all.third.DeleteRequest;
 import com.all.third.DeleteResponse;
 import com.all.third.ReadRequest;
@@ -10,29 +10,29 @@ import com.all.third.ReadResponse;
 import com.all.third.UpdateRequest;
 import com.all.third.UpdateResponse;
 import com.all.third.common.Constants;
-import com.google.protobuf.ByteString;
-
-import io.grpc.Status;
-import io.grpc.stub.StreamObserver;
-import net.devh.boot.grpc.server.service.GrpcService;
 
 import java.io.ByteArrayOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-//endpoint for grpcurl/postman to invoke DataClient
+import com.all.third.dao.DataJpaDao;
+
+import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
+
+//endpoint to be called by fourth client
 @GrpcService
-public class DataServiceImpl extends DataServiceGrpc.DataServiceImplBase {
+public class TargetServiceImpl extends TargetServiceGrpc.TargetServiceImplBase {
 	@Autowired
-	private DataClient dataClient;
+	private DataJpaDao dataJpaDao;
 	
 //	client streaming
 	@Override
 	public StreamObserver<CreateRequest> createData(StreamObserver<CreateResponse> responseObserver) {
 		return new StreamObserver<CreateRequest>() {
 			private ByteArrayOutputStream byteData;
-			private CreateRequest createRequest = null;
 			
 			@Override
 			public void onNext(CreateRequest request) {
@@ -40,22 +40,12 @@ public class DataServiceImpl extends DataServiceGrpc.DataServiceImplBase {
 					responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Data type must not be blank").asRuntimeException());
 					return;
 				}
-				
-				if(request.getData() == null) {
+				else if(request.getData() == null) {
 					responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Data must not be blank").asRuntimeException());
 					return;
 				}
-				else {
-					if(request.getData().getNonText() != null) {						
-						ByteString chunkData = request.getData().getNonText().getByteData();
-					}
-				}
 				
-				if(StringUtils.isBlank(request.getCreBy())) {					
-					request.newBuilder().setCreBy(Constants.third).build();
-				}
-				
-				createRequest = request;
+				request.newBuilder().setCreBy(Constants.third).build();
 			}
 
 			@Override
@@ -65,9 +55,7 @@ public class DataServiceImpl extends DataServiceGrpc.DataServiceImplBase {
 
 			@Override
 			public void onCompleted() {
-//				call client
-				dataClient.invokeCreateData(request);
-				responseObserver.onCompleted();
+				
 			}
 		};
 	}
