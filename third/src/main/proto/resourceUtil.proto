@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.all.third";
+option java_outer_classname = "ResourceProto";
+
+service ResourceUtilService {
+    rpc EncodeResource (EncodeRequest) returns (EncodeResponse) {};
+    rpc DecodeResource (DecodeRequest) returns (DecodeResponse) {};
+}
+
+message EncodeRequest {
+    string filename = 1;
+	string directory = 2;
+}
+
+message EncodeResponse {
+	string outcome = 1;
+    string encodedString = 2;
+    string directory = 3;
+}
+
+message DecodeRequest {
+    string encodedString = 1;
+    string filename = 2;
+    string extension = 3;
+    optional string directory = 4;
+}
+
+message DecodeResponse {
+    string outcome = 1;
+    string directory = 2;
+}

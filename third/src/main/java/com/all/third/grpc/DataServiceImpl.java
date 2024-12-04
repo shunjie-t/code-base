@@ -26,14 +26,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataServiceImpl extends DataServiceGrpc.DataServiceImplBase {
 	@Autowired
 	private DataClient dataClient;
-	
+
 //	client streaming
 	@Override
 	public StreamObserver<CreateRequest> createData(StreamObserver<CreateResponse> responseObserver) {
 		return new StreamObserver<CreateRequest>() {
 			private ByteArrayOutputStream byteData;
 			private CreateRequest createRequest = null;
-			
+
 			@Override
 			public void onNext(CreateRequest request) {
 				if(StringUtils.isBlank(request.getDataType())) {
@@ -41,21 +41,30 @@ public class DataServiceImpl extends DataServiceGrpc.DataServiceImplBase {
 					return;
 				}
 				
-				if(request.getData() == null) {
+				if(request.getData().hasNonText()) {
+					if(StringUtils.isBlank(request.getData().getNonText().getDataDesc())) {
+						responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Data description must not be blank").asRuntimeException());
+						return;
+					}
+					else if(request.getData().getNonText().getByteData() == null) {
+						responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Byte data must not be blank").asRuntimeException());
+						return;
+					}
+					ByteString chunkData = request.getData().getNonText().getByteData();
+				}
+				else if(!request.getData().hasText()) {
 					responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Data must not be blank").asRuntimeException());
 					return;
 				}
-				else {
-					if(request.getData().getNonText() != null) {						
-						ByteString chunkData = request.getData().getNonText().getByteData();
-					}
-				}
 				
-				if(StringUtils.isBlank(request.getCreBy())) {					
-					request.newBuilder().setCreBy(Constants.third).build();
+				String creBy = request.getCreBy();
+				if(StringUtils.isBlank(creBy)) {
+					creBy = Constants.third;
 				}
-				
-				createRequest = request;
+
+				if(StringUtils.isBlank(request.getCreBy())) {
+					createRequest = CreateRequest.newBuilder().setDataType(request.getDataType()).setData(request.getData()).setEnabled(request.getEnabled()).setCreBy(creBy).build();
+				}
 			}
 
 			@Override
@@ -66,27 +75,28 @@ public class DataServiceImpl extends DataServiceGrpc.DataServiceImplBase {
 			@Override
 			public void onCompleted() {
 //				call client
-				dataClient.invokeCreateData(request);
+				CreateResponse response = dataClient.invokeCreateData(createRequest);
+				responseObserver.onNext(response);
 				responseObserver.onCompleted();
 			}
 		};
 	}
-	
-//	server streaming
-	@Override
-	public void readData(ReadRequest request, StreamObserver<ReadResponse> responseObserver) {
-		
-	}
-	
-//	bidirectional streaming
-	@Override
-	public StreamObserver<UpdateRequest> updateData(StreamObserver<UpdateResponse> responseObserver) {
-		return null;
-	}
-	
-//	unary
-	@Override
-	public void deleteData(DeleteRequest request, StreamObserver<DeleteResponse> responseObserver) {
-		
-	}
+
+////	server streaming
+//	@Override
+//	public void readData(ReadRequest request, StreamObserver<ReadResponse> responseObserver) {
+//
+//	}
+//
+////	bidirectional streaming
+//	@Override
+//	public StreamObserver<UpdateRequest> updateData(StreamObserver<UpdateResponse> responseObserver) {
+//		return null;
+//	}
+//
+////	unary
+//	@Override
+//	public void deleteData(DeleteRequest request, StreamObserver<DeleteResponse> responseObserver) {
+//
+//	}
 }
