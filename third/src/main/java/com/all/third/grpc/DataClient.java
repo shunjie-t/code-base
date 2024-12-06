@@ -1,43 +1,73 @@
 package com.all.third.grpc;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.all.third.CreateRequest;
 import com.all.third.CreateResponse;
 import com.all.third.DataServiceGrpc;
+import com.all.third.TargetServiceGrpc;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
-@Service
-public class DataClient {
-	@GrpcClient("fourthClient")
-	private DataServiceGrpc.DataServiceBlockingStub blockingStub;
+//@Service
+@Component
+public class DataClient {	
+//	@GrpcClient("fourthClient")
+	private TargetServiceGrpc.TargetServiceBlockingStub blockingStub;
+//	
+//	@GrpcClient("fourthClient")
+	private TargetServiceGrpc.TargetServiceStub asyncStub;
+	
+	private CreateResponse responseResult = null;
+	
+	public DataClient() {
+		ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 9094).usePlaintext().build();
+		asyncStub = TargetServiceGrpc.newStub(channel);
+	}
 
-	@GrpcClient("fourthClient")
-	private DataServiceGrpc.DataServiceStub asyncStub;
+	public CreateResponse invokeCreateData(List<CreateRequest> request) {
+		CountDownLatch latch = new CountDownLatch(1);
 
-	public CreateResponse invokeCreateData(CreateRequest request) {
-		CreateResponse response = null;
-
-		StreamObserver<CreateRequest> createRequest = asyncStub.createData(new StreamObserver<>() {
+		StreamObserver<CreateRequest> requestObserver = asyncStub.createData(new StreamObserver<>() {
 			@Override
-			public void onNext(CreateResponse value) {
-				System.out.println("on next");
+			public void onNext(CreateResponse response) {
+				responseResult = response;
+				System.out.println(response);
 			}
 
 			@Override
 			public void onError(Throwable t) {
-				System.out.println("on error");
+				System.out.println(t);
+				latch.countDown();
 			}
 
 			@Override
 			public void onCompleted() {
 				System.out.println("on complete");
+				latch.countDown();
 			}
 		});
-
-		return response;
+		
+		for(CreateRequest req : request) {
+			requestObserver.onNext(req);
+		}
+		
+		requestObserver.onCompleted();
+		try {
+			latch.await(1, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		return responseResult;
 	}
 	
 //	public void invokePostData() {

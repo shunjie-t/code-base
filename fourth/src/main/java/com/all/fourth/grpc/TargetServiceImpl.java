@@ -1,6 +1,10 @@
 package com.all.fourth.grpc;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,8 @@ import com.all.fourth.UpdateRequest;
 import com.all.fourth.UpdateResponse;
 import com.all.fourth.common.Constants;
 import com.all.fourth.dao.DataJpaDao;
+import com.all.fourth.dao.view.DataView;
+import com.google.protobuf.ByteString;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -31,7 +37,14 @@ public class TargetServiceImpl extends TargetServiceGrpc.TargetServiceImplBase {
 	@Override
 	public StreamObserver<CreateRequest> createData(StreamObserver<CreateResponse> responseObserver) {
 		return new StreamObserver<CreateRequest>() {
-			private ByteArrayOutputStream byteData;
+//			private ByteArrayOutputStream byteData;
+			private CreateResponse response = null;
+			private List<String> dataId = new ArrayList<>();
+			private List<String> dataType = new ArrayList<>();
+			private List<String> data = new ArrayList<>();
+			private List<Boolean> enabled = new ArrayList<>();
+			private List<String> creBy = new ArrayList<>();
+			private List<String> creOn = new ArrayList<>();
 
 			@Override
 			public void onNext(CreateRequest request) {
@@ -39,12 +52,44 @@ public class TargetServiceImpl extends TargetServiceGrpc.TargetServiceImplBase {
 					responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Data type must not be blank").asRuntimeException());
 					return;
 				}
-				else if(request.getData() == null) {
+				
+				if(request.getData().hasNonText()) {
+					if(StringUtils.isBlank(request.getData().getNonText().getDataDesc())) {
+						responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Data description must not be blank").asRuntimeException());
+						return;
+					}
+					else if(request.getData().getNonText().getByteData() == null) {
+						responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Byte data must not be blank").asRuntimeException());
+						return;
+					}
+					ByteString chunkData = request.getData().getNonText().getByteData();
+				}
+				else if(!request.getData().hasText()) {
 					responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Data must not be blank").asRuntimeException());
 					return;
 				}
-
-				request.newBuilder().setCreBy(Constants.fourth).build();
+				
+				if(StringUtils.isBlank(request.getCreBy())) {
+					responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Cre by must not be blank").asRuntimeException());
+				}
+				
+				LocalDateTime currentDateTime = LocalDateTime.now();
+				DataView view = new DataView();
+				view.setDataType(request.getDataType());
+				view.setData(request.getData().getText());
+				view.setEnabled(request.getEnabled());
+				view.setCreBy(request.getCreBy());
+				view.setCreOn(currentDateTime);
+				view.setUpdBy(request.getCreBy());
+				view.setUpdOn(currentDateTime);
+				
+				DataView saved = dataJpaDao.save(view);
+				dataId.add(saved.getDataId().toString());
+				dataType.add(saved.getDataType());
+				data.add(saved.getData());
+				enabled.add(request.getEnabled());
+				creBy.add(request.getCreBy());
+				creOn.add(currentDateTime.toString());
 			}
 
 			@Override
@@ -54,7 +99,8 @@ public class TargetServiceImpl extends TargetServiceGrpc.TargetServiceImplBase {
 
 			@Override
 			public void onCompleted() {
-				responseObserver.onNext(null);
+				response = CreateResponse.newBuilder().addAllDataId(dataId).addAllDataType(dataType).addAllEnabled(enabled).addAllCreBy(creBy).addAllCreOn(creOn).build();
+				responseObserver.onNext(response);
 				responseObserver.onCompleted();
 			}
 		};

@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.all.third";
+option java_outer_classname = "StreamingProto";
+
+service StreamingService {
+    rpc UnaryCall (UnaryRequest) returns (UnaryResponse) {}; 
+
+    rpc ClientStreamingCall (stream ClientRequest) returns (ClientResponse) {};
+
+    rpc ServerStreamingCall (ServerRequest) returns (stream ServerResponse) {};
+
+    rpc BidirectionalStreamingCall (stream BiRequest) returns (stream BiResponse) {};
+}
+
+message UnaryRequest {
+    string message = 1;
+}
+
+message UnaryResponse {
+    string message = 1;
+}
+
+message ClientRequest {
+    int32 number = 1;
+}
+
+message ClientResponse {
+    int32 sum = 1;
+}
+
+message ServerRequest {
+    string prefix = 1;
+}
+
+message ServerResponse {
+    string message = 1;
+}
+
+message BiRequest {
+    string message = 1;
+}
+
+message BiResponse {
+    string message = 1;
+}

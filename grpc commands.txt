@@ -1,8 +1,8 @@
 command
-grpcurl -d '{"dataType":"txt","data":{"text":"one"},"enabled":true}' -plaintext localhost:9093 DataService.CreateData
-
-
 grpcurl -d '{"message":"Ey344090"}' -plaintext localhost:9093 DataService.DeleteData
+
+
+grpcurl -d '{"dataType":"txt","data":{"text":"one"},"enabled":true}' -plaintext localhost:9093 DataService.CreateData
 
 
 grpcurl -d '{"prefix":["m"]}' -plaintext localhost:9093 DataService.ReadData

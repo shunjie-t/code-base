@@ -17,6 +17,7 @@ import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class DataServiceImpl extends DataServiceGrpc.DataServiceImplBase {
 	public StreamObserver<CreateRequest> createData(StreamObserver<CreateResponse> responseObserver) {
 		return new StreamObserver<CreateRequest>() {
 			private ByteArrayOutputStream byteData;
-			private CreateRequest createRequest = null;
+			private List<CreateRequest> createRequest = null;
 
 			@Override
 			public void onNext(CreateRequest request) {
@@ -63,40 +64,39 @@ public class DataServiceImpl extends DataServiceGrpc.DataServiceImplBase {
 				}
 
 				if(StringUtils.isBlank(request.getCreBy())) {
-					createRequest = CreateRequest.newBuilder().setDataType(request.getDataType()).setData(request.getData()).setEnabled(request.getEnabled()).setCreBy(creBy).build();
+					createRequest.add(CreateRequest.newBuilder().setDataType(request.getDataType()).setData(request.getData()).setEnabled(request.getEnabled()).setCreBy(creBy).build());
 				}
 			}
 
 			@Override
 			public void onError(Throwable t) {
-				System.out.println(t.getMessage());
+				System.out.println(t);
 			}
 
 			@Override
 			public void onCompleted() {
-//				call client
 				CreateResponse response = dataClient.invokeCreateData(createRequest);
 				responseObserver.onNext(response);
 				responseObserver.onCompleted();
 			}
 		};
 	}
-
-////	server streaming
+	
+//	//server streaming
 //	@Override
 //	public void readData(ReadRequest request, StreamObserver<ReadResponse> responseObserver) {
-//
+//		
 //	}
-//
-////	bidirectional streaming
+//	
+//	//bidirectional streaming
 //	@Override
 //	public StreamObserver<UpdateRequest> updateData(StreamObserver<UpdateResponse> responseObserver) {
 //		return null;
 //	}
-//
-////	unary
+//	
+//	//unary
 //	@Override
 //	public void deleteData(DeleteRequest request, StreamObserver<DeleteResponse> responseObserver) {
-//
+//		
 //	}
 }
