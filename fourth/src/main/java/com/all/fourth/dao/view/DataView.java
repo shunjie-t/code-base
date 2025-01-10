@@ -28,5 +28,5 @@ public class DataView extends AuditFields {
 	private String data;
 	
 	@Column(name="ENABLED")
-	private boolean enabled = true;
+	private boolean enabled;
 }

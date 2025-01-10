@@ -1,17 +1,19 @@
-command
-grpcurl -d '{"message":"Ey344090"}' -plaintext localhost:9093 DataService.DeleteData
+grpcurl command
+
+postman payload
+{
+    "dataType":"txt",
+    "data":{
+        "text":"one"
+    },
+    "enabled":true
+}
 
 
-grpcurl -d '{"dataType":"txt","data":{"text":"one"},"enabled":true}' -plaintext localhost:9093 DataService.CreateData
+grpcurl -d '{"request":{"dataType":"txt","data":{"text":"one"},"enabled":1,"creBy":"THIRD"}}' -plaintext localhost:9093 DataService.CreateData
+grpcurl -d '{"request":[{"dataType":"txt","data":{"text":"two"},"enabled":1,"creBy":"THIRD"},{"dataType":"txt","data":{"text":"three"},"enabled":1,"creBy":"THIRD"},{"dataType":"txt","data":{"text":"four"},"enabled":1,"creBy":"THIRD"}]}' -plaintext localhost:9093 DataService.CreateData
 
+grpcurl -d '{"request":{"dataId":{"data":"1"}}}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"request":{"dataId":{"data":["1","2","3"]}}}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"request":{"dataId":{"data":["1","2","3"]}}}' -plaintext localhost:9093 DataService/ReadData
 
-grpcurl -d '{"prefix":["m"]}' -plaintext localhost:9093 DataService.ReadData
-grpcurl -d '{"prefix":["a"]}' -plaintext localhost:9093 DataService.ReadData
-grpcurl -d '{"prefix":["r"]}' -plaintext localhost:9093 DataService.ReadData
-grpcurl -d '{"prefix":["g"]}' -plaintext localhost:9093 DataService.ReadData
-grpcurl -d '{"prefix":["i"]}' -plaintext localhost:9093 DataService.ReadData
-grpcurl -d '{"prefix":["n"]}' -plaintext localhost:9093 DataService.ReadData
-grpcurl -d '{"prefix":["."]}' -plaintext localhost:9093 DataService.ReadData
-
-
-grpcurl -d '{"number":[900000,-800000,50000]}' -plaintext localhost:9093 DataService.UpdateData

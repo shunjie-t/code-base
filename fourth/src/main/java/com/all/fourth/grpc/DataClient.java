@@ -1,12 +1,12 @@
 package com.all.fourth.grpc;
 
-import org.springframework.stereotype.Service;
-
+//import org.springframework.stereotype.Service;
+//
 //import com.all.fourth.DataServiceGrpc;
 //
 //import net.devh.boot.grpc.client.inject.GrpcClient;
 
-@Service
+//@Service
 public class DataClient {
 //	@GrpcClient("thirdClient")
 //	private DataServiceGrpc.DataServiceBlockingStub blockStub;

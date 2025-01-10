@@ -5,11 +5,11 @@ option java_package = "com.all.third";
 option java_outer_classname = "DataProto";
 
 service DataService {
-	// server streaming
-	rpc ReadData (ReadRequest) returns (stream ReadResponse);
-	
 	// client streaming
 	rpc CreateData (stream CreateRequest) returns (CreateResponse);
+	
+	// server streaming
+	rpc ReadData (ReadRequest) returns (stream ReadResponse);
 	
 	// bidirectional streaming
 	rpc UpdateData (stream UpdateRequest) returns (stream UpdateResponse);
@@ -19,73 +19,63 @@ service DataService {
 }
 
 service TargetService {
-	rpc CreateData (stream CreateRequest) returns (CreateResponse);
-	rpc ReadData (ReadRequest) returns (stream ReadResponse);
-	rpc UpdateData (stream UpdateRequest) returns (stream UpdateResponse);
-	rpc DeleteData (DeleteRequest) returns (DeleteResponse);
+	rpc CreateData (stream CreateRequest) returns (CreateResponse) {};
+	rpc ReadData (ReadRequest) returns (stream ReadResponse) {};
+	rpc UpdateData (stream UpdateRequest) returns (stream UpdateResponse) {};
+	rpc DeleteData (DeleteRequest) returns (DeleteResponse) {};
 }
 
+
+//////////////////// main messages ////////////////////
 message CreateRequest {
-	string dataType = 1;
-	Data data = 2;
-	bool enabled = 3;
-	optional string creBy = 4;
+	repeated CreateData request = 1;
 }
 
 message CreateResponse {
-	repeated string dataId = 1;
-	repeated string dataType = 2;
-	repeated bool enabled = 3;
-	repeated string creBy = 4;
-	repeated string creOn = 5;
+	repeated CompleteData response = 1;
 }
 
 message ReadRequest {
-	optional string dataId = 1;
-	optional string dataType = 2;
-	optional bool enabled = 3;
-	optional string creBy = 4;
-	optional string creOn = 5;
-	optional string updBy = 6;
-	optional string updOn = 7;
+	Fields request = 1;
 }
 
 message ReadResponse {
-	CompleteData record = 1;
+	CompleteData response = 1;
 }
 
 message UpdateRequest {
-	Fields searchFields = 1;
+	Fields updateRecord = 1;
 	optional Data data = 2;
 	optional string dataType = 3;
-	optional bool enabled = 4;
+	optional Enabled enabled = 4;
+	optional string updBy = 5;
 }
 
 message UpdateResponse {
-	CompleteData existedRecord = 1;
-	CompleteData updatedRecord = 2;
+	repeated CompleteData existedRecord = 1;
+	repeated CompleteData updatedRecord = 2;
 }
 
 message DeleteRequest {
-	Fields deleteFields = 1;
+	Fields request = 1;
 }
 
 message DeleteResponse {
-	CompleteData deletedRecord = 1;
+	repeated CompleteData response = 1;
 }
+//////////////////// main messages ////////////////////
 
-
-message CompleteData {
-	optional string dataId = 1;
-	optional string dataType = 2;
-    optional Data data = 3;
-	optional bool enabled = 4;
-	optional string creBy = 5;
-	optional string creOn = 6;
-	optional string updBy = 7;
-	optional string updOn = 8;
+//////////////////// sub messages start ////////////////////
+////////// Create sub messages start //////////
+message CreateData {
+	string dataType = 1;
+	Data data = 2;
+	optional Enabled enabled = 3;
+	optional string creBy = 4;
 }
+////////// Create sub messages end //////////
 
+////////// common sub messages start //////////
 message Data {
 	oneof method {
 		string text = 1;
@@ -100,20 +90,48 @@ message NonTextData {
 
 message Fields {
 	oneof method {
-		SearchById id = 1;
-		SearchOtherFields other = 2;
+		SearchByDataId dataId = 1;
+		OtherField other = 2;
 	}
 }
 
-message SearchById {
-	optional string dataId = 1;
+message SearchByDataId {
+	repeated string data = 1;
 }
 
-message SearchOtherFields {
-	optional string dataType= 1;
-	optional bool enabled = 2;
-	optional string creBy = 3;
-	optional string creOn = 4;
-	optional string updBy = 5;
-	optional string updOn = 6;
+message OtherField {
+	optional SearchByDataType dataType = 1;
+	optional Enabled enabled = 2;
+	optional SearchByCreBy creBy = 3;
+	optional SearchByUpdBy updBy = 4;
 }
+
+message SearchByDataType {
+	repeated string data = 1;
+}
+
+message SearchByCreBy {
+	repeated string data = 1;
+}
+
+message SearchByUpdBy {
+	repeated string data = 1;
+}
+
+message CompleteData {
+	optional string dataId = 1;
+	optional string dataType = 2;
+    optional Data data = 3;
+	optional Enabled enabled = 4;
+	optional string creBy = 5;
+	optional string creOn = 6;
+	optional string updBy = 7;
+	optional string updOn = 8;
+}
+
+enum Enabled {
+	FALSE = 0;
+	TRUE = 1;
+};
+////////// common sub messages end //////////
+//////////////////// sub messages end ////////////////////
