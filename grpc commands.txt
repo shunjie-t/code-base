@@ -1,19 +1,22 @@
 grpcurl command
 
-postman payload
-{
-    "dataType":"txt",
-    "data":{
-        "text":"one"
-    },
-    "enabled":true
-}
+Create record
+grpcurl -d '{"createRecord":{"dataType":"txt","data":{"text":"one"},"enabled":true,"creBy":"THIRD"}}' -plaintext localhost:9093 DataService.CreateData
+grpcurl -d '{"createRecord":[{"dataType":"txt","data":{"text":"two"},"enabled":true,"creBy":"THIRD"},{"dataType":"lbl","data":{"text":"Submit Form"},"enabled":true,"creBy":"THIRD"},{"dataType":"txt","data":{"text":"four"},"enabled":false,"creBy":"THIRD"}]}' -plaintext localhost:9093 DataService.CreateData
 
+Read record
+grpcurl -d '{"readRecord":{"dataId":{"data":"1"}}}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"readRecord":{"dataId":{"data":["1","2","3","4","5","6","7"]}}}' -plaintext localhost:9093 DataService.ReadData
+grpcurl -d '{"readRecord":{"other":{"dataType":{"data":["TXT"]},"enabled":true,"creBy":{"data":["third"]},"updBy":{"data":["third"]}}}}' -plaintext localhost:9093 DataService.ReadData
 
-grpcurl -d '{"request":{"dataType":"txt","data":{"text":"one"},"enabled":1,"creBy":"THIRD"}}' -plaintext localhost:9093 DataService.CreateData
-grpcurl -d '{"request":[{"dataType":"txt","data":{"text":"two"},"enabled":1,"creBy":"THIRD"},{"dataType":"txt","data":{"text":"three"},"enabled":1,"creBy":"THIRD"},{"dataType":"txt","data":{"text":"four"},"enabled":1,"creBy":"THIRD"}]}' -plaintext localhost:9093 DataService.CreateData
+Update record
+grpcurl -d '{"updateRecord":{"data":{"text":"Wire"}},"searchRecord":{"other":{"dataType":{"data":"txt"},"enabled":true}}}' -plaintext localhost:9093 DataService.UpdateData
+grpcurl -d '{"updateRecord":{"data":{"text":"Email address:"}},"searchRecord":{"other":{"dataType":{"data":"lb"}}}}' -plaintext localhost:9093 DataService.UpdateData
 
-grpcurl -d '{"request":{"dataId":{"data":"1"}}}' -plaintext localhost:9093 DataService.ReadData
-grpcurl -d '{"request":{"dataId":{"data":["1","2","3"]}}}' -plaintext localhost:9093 DataService.ReadData
-grpcurl -d '{"request":{"dataId":{"data":["1","2","3"]}}}' -plaintext localhost:9093 DataService/ReadData
+grpcurl -d '{"updateRecord":{"enabled":false,"updBy":"THIRD"},"searchRecord":{"dataId":{"data":"3"}}}' -plaintext localhost:9093 DataService.UpdateData
 
+Delete record
+grpcurl -d '{"deleteRecord":{"dataId":{"data":"3"}}}' -plaintext localhost:9093 DataService.DeleteData
+grpcurl -d '{"deleteRecord":{"dataId":{"data":["1","2"]}}}' -plaintext localhost:9093 DataService.DeleteData
+grpcurl -d '{"deleteRecord":{"other":{"dataType":{"data":"GN"},"enabled":true,"creBy":{"data":["FOURTH"]},"updBy":{"data":["FOURTH"]}}}}' -plaintext localhost:9093 DataService.DeleteData
+grpcurl -d '{"deleteRecord":{"other":{"dataType":{"data":["TXT","CD","LB"]}}}}' -plaintext localhost:9093 DataService.DeleteData

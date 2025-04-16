@@ -29,18 +29,13 @@ public class DataClient {
 	private TargetServiceGrpc.TargetServiceStub asyncStub;
 	
 	private CreateResponse createResponse = null;
-	private UpdateResponse updateResponse = null;
 	
-//	public DataClient() {
-//		ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 9094).usePlaintext().build();
-//		asyncStub = TargetServiceGrpc.newStub(channel);
-//		blockingStub = TargetServiceGrpc.newBlockingStub(channel);
-//	}
+	private UpdateResponse updateResponse = null;
 
 	public CreateResponse invokeCreateData(List<CreateRequest> request) {
 		CountDownLatch latch = new CountDownLatch(1);
 
-		StreamObserver<CreateRequest> requestObserver = asyncStub.createData(new StreamObserver<>() {
+		StreamObserver<CreateRequest> requestObserver = asyncStub.withDeadlineAfter(3600, TimeUnit.SECONDS).createData(new StreamObserver<>() {
 			@Override
 			public void onNext(CreateResponse response) {
 				createResponse = response;
@@ -61,30 +56,26 @@ public class DataClient {
 		for(CreateRequest req : request) {
 			requestObserver.onNext(req);
 		}
-		
 		requestObserver.onCompleted();
+		
 		try {
-			latch.await(1, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
+			latch.await();
+		} 
+		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		
 		return createResponse;
 	}
 	
-	public ReadResponse invokeReadData(ReadRequest request) {
-		Iterator<ReadResponse> iterator = blockingStub.withDeadlineAfter(3600, TimeUnit.SECONDS).readData(request);
-		ReadResponse response = null;
-		while(iterator.hasNext()) {
-			response = iterator.next();
-		}
-		return response;
+	public Iterator<ReadResponse> invokeReadData(ReadRequest request) {
+		return blockingStub.withDeadlineAfter(3600, TimeUnit.SECONDS).readData(request);
 	}
 	
 	public UpdateResponse invokeUpdateData(List<UpdateRequest> request) {
-//	public void invokeUpdateData(List<UpdateRequest> request) {
 		CountDownLatch latch = new CountDownLatch(1);
-		StreamObserver<UpdateRequest> requestObserver = asyncStub.updateData(new StreamObserver<UpdateResponse>() {
+		
+		StreamObserver<UpdateRequest> requestObserver = asyncStub.withDeadlineAfter(3600, TimeUnit.SECONDS).updateData(new StreamObserver<>() {
 			@Override
 			public void onNext(UpdateResponse response) {
 				 updateResponse = response;
@@ -105,8 +96,8 @@ public class DataClient {
 		for(UpdateRequest req : request) {
 			requestObserver.onNext(req);
 		}
-		
 		requestObserver.onCompleted();
+		
 		try {
 			latch.await();
 		} catch (InterruptedException e) {
@@ -117,8 +108,6 @@ public class DataClient {
 	}
 	
 	public DeleteResponse invokeDeleteData(DeleteRequest request) {
-		blockingStub.deleteData(null);
-		DeleteResponse response = null;
-		return response;
+		return blockingStub.withDeadlineAfter(3600, TimeUnit.SECONDS).deleteData(request);
 	}
 }

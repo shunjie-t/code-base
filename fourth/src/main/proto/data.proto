@@ -4,6 +4,8 @@ option java_multiple_files = true;
 option java_package = "com.all.fourth";
 option java_outer_classname = "DataProto";
 
+import "google/protobuf/wrappers.proto";
+
 service DataService {
 	// client streaming
 	rpc CreateData (stream CreateRequest) returns (CreateResponse);
@@ -28,40 +30,38 @@ service TargetService {
 
 //////////////////// main messages ////////////////////
 message CreateRequest {
-	repeated CreateData request = 1;
+	repeated CreateData createRecord = 1;
 }
 
 message CreateResponse {
-	repeated CompleteData response = 1;
+	repeated CompleteData createdRecord = 1;
 }
 
 message ReadRequest {
-	Fields request = 1;
+	SearchField readRecord = 1;
 }
 
 message ReadResponse {
-	CompleteData response = 1;
+	CompleteData readRecord = 1;
 }
 
 message UpdateRequest {
-	Fields updateRecord = 1;
-	optional Data data = 2;
-	optional string dataType = 3;
-	optional Enabled enabled = 4;
-	optional string updBy = 5;
+	UpdateField updateRecord = 1;
+	SearchField searchRecord = 2;
 }
 
 message UpdateResponse {
-	repeated CompleteData existedRecord = 1;
-	repeated CompleteData updatedRecord = 2;
+	repeated CompleteData updatedRecord = 1;
+	repeated CompleteData existedRecord = 2;
 }
 
 message DeleteRequest {
-	Fields request = 1;
+	SearchField deleteRecord = 1;
 }
 
 message DeleteResponse {
-	repeated CompleteData response = 1;
+	string deleteSuccessful = 1;
+	repeated CompleteData deletedRecord = 2; 
 }
 //////////////////// main messages ////////////////////
 
@@ -70,10 +70,19 @@ message DeleteResponse {
 message CreateData {
 	string dataType = 1;
 	Data data = 2;
-	optional Enabled enabled = 3;
-	optional string creBy = 4;
+	google.protobuf.BoolValue enabled = 3;
+	string creBy = 4;
 }
 ////////// Create sub messages end //////////
+
+////////// Update sub messages start //////////
+message UpdateField {
+	optional Data data = 1;
+	optional string dataType = 2;
+	optional google.protobuf.BoolValue enabled = 3;
+	optional string updBy = 4;
+}
+////////// Update sub messages end //////////
 
 ////////// common sub messages start //////////
 message Data {
@@ -88,20 +97,20 @@ message NonTextData {
 	string dataDesc = 2;
 }
 
-message Fields {
+message SearchField {
 	oneof method {
-		SearchByDataId dataId = 1;
+		DataIdField dataId = 1;
 		OtherField other = 2;
 	}
 }
 
-message SearchByDataId {
+message DataIdField {
 	repeated string data = 1;
 }
 
 message OtherField {
 	optional SearchByDataType dataType = 1;
-	optional Enabled enabled = 2;
+	optional google.protobuf.BoolValue enabled = 2;
 	optional SearchByCreBy creBy = 3;
 	optional SearchByUpdBy updBy = 4;
 }
@@ -122,16 +131,11 @@ message CompleteData {
 	optional string dataId = 1;
 	optional string dataType = 2;
     optional Data data = 3;
-	optional Enabled enabled = 4;
+	optional bool enabled = 4;
 	optional string creBy = 5;
 	optional string creOn = 6;
 	optional string updBy = 7;
 	optional string updOn = 8;
 }
-
-enum Enabled {
-	FALSE = 0;
-	TRUE = 1;
-};
 ////////// common sub messages end //////////
 //////////////////// sub messages end ////////////////////
